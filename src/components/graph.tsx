@@ -1,11 +1,11 @@
 import { Grid, Rect, Node, RectProps, Circle } from "@motion-canvas/2d/lib/components";
 import { initial, signal } from "@motion-canvas/2d/lib/decorators";
-import { createSignal, SimpleSignal } from "@motion-canvas/core/lib/signals";
+import { createSignal, SignalValue, SimpleSignal } from "@motion-canvas/core/lib/signals";
 import { SimpleVector2Signal, Vector2 } from "@motion-canvas/core/lib/types";
 
 export interface GraphProps extends RectProps {
-	graph_center?: Vector2;
-	view_distance?: number;
+	readonly graph_center?: SignalValue<Vector2>;
+	readonly view_distance?: SignalValue<number>;
 }
 
 export class Graph extends Rect {
