@@ -1,23 +1,65 @@
 import { Node, NodeProps } from "@motion-canvas/2d/lib/components";
-import { initial, signal } from "@motion-canvas/2d/lib/decorators";
-import { createSignal, SignalValue, SimpleSignal } from "@motion-canvas/core/lib/signals";
-import { Vector2, Vector2Signal } from "@motion-canvas/core/lib/types";
-
-// === State === //
+import { colorSignal, initial, signal } from "@motion-canvas/2d/lib/decorators";
+import { Color, ColorSignal, PossibleColor, Vector2, Vector2Signal } from "@motion-canvas/core/lib/types";
 
 export type DerivativeFunc = (pos: Vector2) => number;
 
-export class Particle {
-	public readonly trail: Trail;
-	public readonly position = Vector2.createSignal();
+export interface ParticleProps extends NodeProps {
+	readonly max_trail_length?: number;
+	readonly trail_color?: PossibleColor;
+}
 
-	constructor(starting: Vector2, max_trail_length?: number) {
-		this.trail = new Trail(max_trail_length);
-		this.position(starting);
+export class Particle extends Node {
+	// FIXME: This is a bug with VSCode's IntelliSense. Figure out why this is happening
+	// and remove this ugly hack.
+	public declare readonly position: Vector2Signal<this>;
+
+	@initial(new Color("#000"))
+	@colorSignal()
+	public declare readonly trail_color: ColorSignal<this>;
+
+	private readonly trail: Trail;
+
+	constructor(props: ParticleProps) {
+		super(props);
+		this.trail = new Trail(props.max_trail_length);
 	}
 
-	moveByUntracked(delta: Vector2) {
-		this.position(this.position().add(delta));
+	protected override draw(context: CanvasRenderingContext2D): void {
+		const { trail, position } = this;
+		const { x, y } = position();
+
+		// Undo duplicated transform
+		context.save();
+		context.translate(-x, -y);
+
+		// Draw trail
+		context.beginPath();
+		context.strokeStyle = this.trail_color().css();
+		context.globalAlpha = this.trail_color().alpha();
+		context.lineWidth = 0.1;
+
+		let first = true;
+		for (const i of trail.iterIndices()) {
+			context[(first ? "moveTo" : "lineTo")](trail.positions_x[i], trail.positions_y[i]);
+			first = false;
+		}
+
+		context.stroke();
+
+		// Draw particle
+		context.globalAlpha = 1;
+		context.fillStyle = this.trail_color().css();
+
+		context.beginPath();
+		context.arc(x, y, 0.2, 0, 2 * Math.PI);
+		context.fill();
+
+		// Restore context
+		context.restore();
+
+		// Render children
+		super.draw(context);
 	}
 
 	recordTrail() {
@@ -27,19 +69,25 @@ export class Particle {
 
 	moveBy(delta: Vector2) {
 		this.recordTrail();
-		this.moveByUntracked(delta);
+		this.moveByNoTrail(delta);
 	}
 
-	processOnce(step_size: number, derivative: DerivativeFunc, step_subdivision: number = 1) {
-		this.recordTrail();
-		const real_step_size = step_size / step_subdivision;
-		for (let s = 0; s < step_subdivision; s++) {
-			this.moveByUntracked(new Vector2(1, derivative(this.position())).scale(real_step_size));
+	moveByNoTrail(delta: Vector2) {
+		this.position(this.position().add(delta));
+	}
+
+	simulate(step: number, sub_steps: number, derivative: DerivativeFunc) {
+		step = step / sub_steps;
+
+		for (let i = 0; i < sub_steps; i++) {
+			this.moveByNoTrail(new Vector2(1, derivative(this.position())).scale(step));
 		}
+
+		this.recordTrail();
 	}
 }
 
-export class Trail {
+class Trail {
 	private readonly positions_x_: number[] = [];
 	private readonly positions_y_: number[] = [];
 	private head = 0;
@@ -76,65 +124,5 @@ export class Trail {
 		for (let i = 0; i < this.head; i++) {
 			yield i;
 		}
-	}
-}
-
-// === Renderer === //
-
-export interface ParticleRendererProps extends NodeProps {
-	readonly particle?: SignalValue<Particle>;
-}
-
-export class ParticleRenderer extends Node {
-	// FIXME: This is a bug with VSCode's IntelliSense. Figure
-	public declare readonly position: Vector2Signal<this>;
-
-	@initial(null)
-	@signal()
-	public declare readonly particle: SimpleSignal<Particle | null>;
-
-	constructor(props: ParticleRendererProps) {
-		super(props);
-		this.position(() => {
-			const particle = this.particle();
-			return particle !== null ?
-				new Vector2(particle.position().x, particle.position().y) :
-				Vector2.zero;
-		});
-	}
-
-	protected override draw(context: CanvasRenderingContext2D): void {
-		const particle = this.particle();
-
-		if (particle !== null) {
-			const { trail, position } = particle;
-			const { x, y } = position();
-
-			// Undo duplicated transform
-			context.save();
-			context.translate(-x, -y);
-
-			// Draw trail
-			context.beginPath();
-			context.lineWidth = 0.1;
-
-			let first = true;
-			for (const i of trail.iterIndices()) {
-				context[(first ? "moveTo" : "lineTo")](trail.positions_x[i], trail.positions_y[i]);
-				first = false;
-			}
-
-			context.stroke();
-
-			// Draw particle
-			context.beginPath();
-			context.arc(x, y, 0.2, 0, 2 * Math.PI);
-			context.fill();
-
-			// Restore context
-			context.restore();
-		}
-
-		super.draw(context);
 	}
 }
