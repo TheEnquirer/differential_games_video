@@ -6,8 +6,14 @@ export type DerivativeFunc = (pos: Vector2) => number;
 
 export interface ParticleProps extends NodeProps {
 	readonly max_trail_length?: number;
-	readonly trail_color?: PossibleColor;
+	readonly color?: PossibleColor;
 }
+
+export type ParticleAnimateConfig = Readonly<{
+	frames: number,
+	frame_step: number,
+	sub_steps: number,
+}>;
 
 export class Particle extends Node {
 	// FIXME: This is a bug with VSCode's IntelliSense. Figure out why this is happening
@@ -16,7 +22,7 @@ export class Particle extends Node {
 
 	@initial(new Color("#000"))
 	@colorSignal()
-	public declare readonly trail_color: ColorSignal<this>;
+	public declare readonly color: ColorSignal<this>;
 
 	private readonly trail: Trail;
 
@@ -35,8 +41,8 @@ export class Particle extends Node {
 
 		// Draw trail
 		context.beginPath();
-		context.strokeStyle = this.trail_color().css();
-		context.globalAlpha = this.trail_color().alpha();
+		context.strokeStyle = this.color().css();
+		context.globalAlpha = this.color().alpha();
 		context.lineWidth = 0.1;
 
 		let first = true;
@@ -49,7 +55,7 @@ export class Particle extends Node {
 
 		// Draw particle
 		context.globalAlpha = 1;
-		context.fillStyle = this.trail_color().css();
+		context.fillStyle = this.color().css();
 
 		context.beginPath();
 		context.arc(x, y, 0.2, 0, 2 * Math.PI);
@@ -84,6 +90,23 @@ export class Particle extends Node {
 		}
 
 		this.recordTrail();
+	}
+
+	static simulateDescendants(target: Node, step: number, sub_steps: number, derivative: DerivativeFunc) {
+		for (const child of target.children()) {
+			if (child instanceof Particle) {
+				child.simulate(step, sub_steps, derivative);
+			}
+
+			Particle.simulateDescendants(child, step, sub_steps, derivative);
+		}
+	}
+
+	static *animateDescendants(target: Node, { frames, frame_step, sub_steps }: ParticleAnimateConfig, derivative: DerivativeFunc) {
+		for (let i = 0; i < frames; i++) {
+			Particle.simulateDescendants(target, frame_step, sub_steps, derivative);
+			yield;
+		}
 	}
 }
 

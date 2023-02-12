@@ -20,16 +20,39 @@ export default makeScene2D(function* (view) {
 			<Circle x={2} width={1} height={1} fill="green" />
 			<Circle x={3} width={1} height={1} fill="green" />
 			<Circle x={4} width={1} height={1} fill="blue" />
-			<Particle ref={particle} position={Vector2.zero} max_trail_length={20} trail_color="#ffbc03">
+
+			{(() => {
+				const particles = [];
+				for (let x = -5; x <= 5; x++) {
+					for (let y = -5; y <= 5; y++) {
+						if (x === 0 && y === 0) continue;
+
+						particles.push(<Particle
+							position={new Vector2(x, y)}
+							max_trail_length={20}
+							color={new Color("#000").alpha(0.2)}
+						/>);
+					}
+				}
+
+				return particles;
+			})()}
+
+			<Particle ref={particle} position={Vector2.zero} max_trail_length={20} color="#ffbc03">
 				<Text x={1.5} fontSize={0.8}> Whee! </Text>
 			</Particle>
 		</Graph>
 	</>);
 
-	for (let i = 0; i < 70; i++) {
-		particle().simulate(0.1, 1, ({ x, y }) => x - y);
-		yield;
-	}
+	yield* Particle.animateDescendants(
+		graph(),
+		{
+			frame_step: 0.1,
+			frames: 60,
+			sub_steps: 1,
+		},
+		({ x, y }) => x - y,
+	);
 
 	yield* all(
 		graph().graph_center(particle().position(), 0.5),
@@ -42,15 +65,18 @@ export default makeScene2D(function* (view) {
 			yield* graph().view_distance(5, 1);
 		})(),
 		(function* () {
-			const text = <Text opacity={0} y={-400}> Live "Whee!" Camera</Text>;
+			const text = <Text opacity={0} y={-400}> Live "Whee!" Convoy Camera</Text>;
 			view.add(text);
 			yield* text.opacity(1, 1);
 		})(),
-		(function* () {
-			for (let i = 0; i < 60; i++) {
-				particle().simulate(0.1, 1, ({ x, y }) => x - y);
-				yield;
-			}
-		})(),
+		Particle.animateDescendants(
+			graph(),
+			{
+				frame_step: 0.1,
+				frames: 60,
+				sub_steps: 1,
+			},
+			({ x, y }) => x - y,
+		),
 	)
 });
