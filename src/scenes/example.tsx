@@ -1,23 +1,26 @@
-import { makeScene2D } from '@motion-canvas/2d/lib/scenes';
 import { Circle } from '@motion-canvas/2d/lib/components';
+import { makeScene2D } from '@motion-canvas/2d/lib/scenes';
+import { Vector2 } from '@motion-canvas/core/lib/types';
 import { createRef } from '@motion-canvas/core/lib/utils';
-import { all } from '@motion-canvas/core/lib/flow';
+import { Graph } from '../components/graph';
 
 export default makeScene2D(function* (view) {
-    const myCircle = createRef<Circle>();
+	const graph = createRef<Graph>();
 
-    view.add(
-        <Circle
-            ref={myCircle}
-            x={-300}
-            width={240}
-            height={240}
-            fill="#e13238"
-        />,
-    );
+	view.add(<>
+		<Graph ref={graph} width={1200} height={900} graph_center={new Vector2(0, 0)} view_distance={5}>
+			<Circle x={-3} width={1} height={1} fill="green" />
+			<Circle x={-2} width={1} height={1} fill="green" />
+			<Circle x={-1} width={1} height={1} fill="green" />
+			<Circle x={0} width={1} height={1} fill="red" />
+			<Circle x={1} width={1} height={1} fill="green" />
+			<Circle x={2} width={1} height={1} fill="green" />
+			<Circle x={3} width={1} height={1} fill="green" />
+			<Circle x={4} width={1} height={1} fill="blue" />
+		</Graph>
+	</>);
 
-    yield* all(
-        myCircle().position.x(300, 1).to(-300, 1),
-        myCircle().fill('#e6a700', 1).to('#e13238', 1),
-    );
+	yield* graph().view_distance(20, 2);
+	yield* graph().graph_center(new Vector2(4, 0), 2);
+	yield* graph().view_distance(1, 2);
 });
