@@ -1,5 +1,6 @@
 import { Node, NodeProps } from "@motion-canvas/2d/lib/components";
 import { colorSignal, initial, signal } from "@motion-canvas/2d/lib/decorators";
+import { SimpleSignal } from "@motion-canvas/core/lib/signals";
 import { Color, ColorSignal, PossibleColor, Vector2, Vector2Signal } from "@motion-canvas/core/lib/types";
 
 export type DerivativeFunc = (pos: Vector2) => number;
@@ -7,6 +8,8 @@ export type DerivativeFunc = (pos: Vector2) => number;
 export interface ParticleProps extends NodeProps {
 	readonly max_trail_length?: number;
 	readonly color?: PossibleColor;
+	readonly head_radius?: number;
+	readonly tail_width?: number;
 }
 
 export type ParticleAnimateConfig = Readonly<{
@@ -25,6 +28,14 @@ export class Particle extends Node {
 	@colorSignal()
 	public declare readonly color: ColorSignal<this>;
 
+	@initial(0.2)
+	@signal()
+	public declare readonly head_radius: SimpleSignal<number, this>;
+
+	@initial(0.1)
+	@signal()
+	public declare readonly tail_width: SimpleSignal<number, this>;
+
 	private readonly trail: Trail;
 
 	constructor(props: ParticleProps) {
@@ -41,27 +52,31 @@ export class Particle extends Node {
 		context.translate(-x, -y);
 
 		// Draw trail
-		context.beginPath();
-		context.strokeStyle = this.color().css();
-		context.globalAlpha = this.color().alpha();
-		context.lineWidth = 0.1;
+		if (this.tail_width() > 0) {
+			context.beginPath();
+			context.strokeStyle = this.color().css();
+			context.globalAlpha = this.color().alpha();
+			context.lineWidth = this.tail_width();
 
-		let first = true;
-		for (const i of trail.iterIndices()) {
-			context[(first ? "moveTo" : "lineTo")](trail.positions_x[i], trail.positions_y[i]);
-			first = false;
+			let first = true;
+			for (const i of trail.iterIndices()) {
+				context[(first ? "moveTo" : "lineTo")](trail.positions_x[i], trail.positions_y[i]);
+				first = false;
+			}
+
+			context.lineTo(x, y);
+			context.stroke();
 		}
 
-		context.lineTo(x, y);
-		context.stroke();
-
 		// Draw particle
-		context.globalAlpha = 1;
-		context.fillStyle = this.color().css();
+		if (this.head_radius() > 0) {
+			context.globalAlpha = 1;
+			context.fillStyle = this.color().css();
 
-		context.beginPath();
-		context.arc(x, y, 0.2, 0, 2 * Math.PI);
-		context.fill();
+			context.beginPath();
+			context.arc(x, y, this.head_radius(), 0, 2 * Math.PI);
+			context.fill();
+		}
 
 		// Restore context
 		context.restore();
@@ -112,12 +127,21 @@ export class Particle extends Node {
 		}
 	}
 
-	static *animateDescendants(target: Node, { frames, frame_step, sub_steps, trail_every }: ParticleAnimateConfig, derivative: DerivativeFunc) {
+	static *animateDescendants(
+		target: Node,
+		{
+			frames,
+			frame_step,
+			sub_steps,
+			trail_every,
+		}: ParticleAnimateConfig,
+		derivative: DerivativeFunc,
+	) {
 		trail_every ??= 1;
 
 		for (let i = 0; i < frames; i++) {
-			Particle.simulateDescendants(target, frame_step, sub_steps, derivative, i % trail_every === 0);
 			yield;
+			Particle.simulateDescendants(target, frame_step, sub_steps, derivative, i % trail_every === 0);
 		}
 	}
 }

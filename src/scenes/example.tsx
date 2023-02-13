@@ -1,13 +1,13 @@
-import { Circle, Text } from '@motion-canvas/2d/lib/components';
+import { Circle } from '@motion-canvas/2d/lib/components';
 import { makeScene2D } from '@motion-canvas/2d/lib/scenes';
-import { all } from '@motion-canvas/core/lib/flow';
-import { Color, Vector2 } from '@motion-canvas/core/lib/types';
+import { chain, waitFor } from '@motion-canvas/core/lib/flow';
+import { easeOutBounce } from '@motion-canvas/core/lib/tweening';
+import { Vector2 } from '@motion-canvas/core/lib/types';
 import { createRef } from '@motion-canvas/core/lib/utils';
 import { Particle } from '../components/flow';
 import { Graph } from '../components/graph';
 
 export default makeScene2D(function* (view) {
-	const particle = createRef<Particle>();
 	const graph = createRef<Graph>();
 
 	view.add(<>
@@ -20,29 +20,27 @@ export default makeScene2D(function* (view) {
 			<Circle x={2} width={1} height={1} fill="green" />
 			<Circle x={3} width={1} height={1} fill="green" />
 			<Circle x={4} width={1} height={1} fill="blue" />
-
-			{(() => {
-				const particles = [];
-				for (let x = -10; x <= 10; x++) {
-					for (let y = -10; y <= 10; y++) {
-						if (x === 0 && y === 0) continue;
-
-						particles.push(<Particle
-							position={new Vector2(x, y)}
-							max_trail_length={20}
-							color={new Color("#000").alpha(0.5)}
-						/>);
-					}
-				}
-
-				return particles;
-			})()}
-
-			<Particle ref={particle} position={Vector2.zero} max_trail_length={20} color="#ffbc03">
-				<Text x={1.5} fontSize={0.8}> Whee! </Text>
-			</Particle>
 		</Graph>
 	</>);
+
+	const size = 5;
+
+	for (let x = -size; x <= size; x++) {
+		for (let y = -size; y <= size; y++) {
+			const particle = createRef<Particle>();
+
+			graph()
+				.content_container()
+				.add(<Particle ref={particle} x={x} y={y} head_radius={0} max_trail_length={20} color="#ffbc03" />);
+
+			yield chain(
+				waitFor(0.005 * (x + size) * (y + size)),
+				particle().head_radius(0.2, 0.01, easeOutBounce),
+			);
+		}
+	}
+
+	yield* waitFor(1);
 
 	yield* Particle.animateDescendants(
 		graph(),
@@ -53,30 +51,4 @@ export default makeScene2D(function* (view) {
 		},
 		({ x, y }) => x - y,
 	);
-
-	yield* all(
-		graph().graph_center(particle().position(), 0.5),
-		graph().view_distance(10, 0.5),
-	);
-	graph().graph_center(() => particle().position());
-
-	yield* all(
-		(function* () {
-			yield* graph().view_distance(5, 1);
-		})(),
-		(function* () {
-			const text = <Text opacity={0} y={-400}> Live "Whee!" Convoy Camera</Text>;
-			view.add(text);
-			yield* text.opacity(1, 1);
-		})(),
-		Particle.animateDescendants(
-			graph(),
-			{
-				frame_step: 0.1,
-				frames: 60,
-				sub_steps: 1,
-			},
-			({ x, y }) => x - y,
-		),
-	)
 });

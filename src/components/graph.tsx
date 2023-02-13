@@ -2,6 +2,7 @@ import { Grid, Rect, Node, RectProps, Circle } from "@motion-canvas/2d/lib/compo
 import { initial, signal } from "@motion-canvas/2d/lib/decorators";
 import { createSignal, SignalValue, SimpleSignal } from "@motion-canvas/core/lib/signals";
 import { SimpleVector2Signal, Vector2 } from "@motion-canvas/core/lib/types";
+import { createRef } from "@motion-canvas/core/lib/utils";
 
 export interface GraphProps extends RectProps {
 	readonly graph_center?: SignalValue<Vector2>;
@@ -15,6 +16,8 @@ export class Graph extends Rect {
 	@initial(10)
 	@signal()
 	public declare readonly view_distance: SimpleSignal<number, this>;
+
+	public readonly content_container = createRef<Node>();
 
 	constructor(props: GraphProps) {
 		super(props);
@@ -48,7 +51,7 @@ export class Graph extends Rect {
 				}}
 				size={() => this.size().add(new Vector2(2 * spacing()))}
 			/>
-			<Node position={() => scaled_center().scale(-1)} scale={scale_factor}>
+			<Node ref={this.content_container} position={() => scaled_center().scale(-1)} scale={scale_factor}>
 				{props.children}
 			</Node>
 		</>);
