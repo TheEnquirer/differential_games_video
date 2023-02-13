@@ -23,14 +23,14 @@ export default makeScene2D(function* (view) {
 
 			{(() => {
 				const particles = [];
-				for (let x = -5; x <= 5; x++) {
-					for (let y = -5; y <= 5; y++) {
+				for (let x = -10; x <= 10; x++) {
+					for (let y = -10; y <= 10; y++) {
 						if (x === 0 && y === 0) continue;
 
 						particles.push(<Particle
 							position={new Vector2(x, y)}
 							max_trail_length={20}
-							color={new Color("#000").alpha(0.2)}
+							color={new Color("#000").alpha(0.5)}
 						/>);
 					}
 				}

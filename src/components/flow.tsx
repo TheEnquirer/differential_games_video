@@ -13,6 +13,7 @@ export type ParticleAnimateConfig = Readonly<{
 	frames: number,
 	frame_step: number,
 	sub_steps: number,
+	trail_every?: number,
 }>;
 
 export class Particle extends Node {
@@ -51,6 +52,7 @@ export class Particle extends Node {
 			first = false;
 		}
 
+		context.lineTo(x, y);
 		context.stroke();
 
 		// Draw particle
@@ -82,29 +84,39 @@ export class Particle extends Node {
 		this.position(this.position().add(delta));
 	}
 
-	simulate(step: number, sub_steps: number, derivative: DerivativeFunc) {
+	simulate(step: number, sub_steps: number, derivative: DerivativeFunc, record_trail?: boolean) {
 		step = step / sub_steps;
 
 		for (let i = 0; i < sub_steps; i++) {
 			this.moveByNoTrail(new Vector2(1, derivative(this.position())).scale(step));
 		}
 
-		this.recordTrail();
-	}
-
-	static simulateDescendants(target: Node, step: number, sub_steps: number, derivative: DerivativeFunc) {
-		for (const child of target.children()) {
-			if (child instanceof Particle) {
-				child.simulate(step, sub_steps, derivative);
-			}
-
-			Particle.simulateDescendants(child, step, sub_steps, derivative);
+		if (record_trail) {
+			this.recordTrail();
 		}
 	}
 
-	static *animateDescendants(target: Node, { frames, frame_step, sub_steps }: ParticleAnimateConfig, derivative: DerivativeFunc) {
+	static simulateDescendants(
+		target: Node,
+		step: number,
+		sub_steps: number,
+		derivative: DerivativeFunc,
+		record_trail?: boolean,
+	) {
+		for (const child of target.children()) {
+			if (child instanceof Particle) {
+				child.simulate(step, sub_steps, derivative, record_trail);
+			}
+
+			Particle.simulateDescendants(child, step, sub_steps, derivative, record_trail);
+		}
+	}
+
+	static *animateDescendants(target: Node, { frames, frame_step, sub_steps, trail_every }: ParticleAnimateConfig, derivative: DerivativeFunc) {
+		trail_every ??= 1;
+
 		for (let i = 0; i < frames; i++) {
-			Particle.simulateDescendants(target, frame_step, sub_steps, derivative);
+			Particle.simulateDescendants(target, frame_step, sub_steps, derivative, i % trail_every === 0);
 			yield;
 		}
 	}
