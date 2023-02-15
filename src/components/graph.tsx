@@ -10,6 +10,7 @@ export interface GraphProps extends RectProps {
 }
 
 export class Graph extends Rect {
+	@initial(Vector2.zero)
 	@signal()
 	public declare readonly graph_center: SimpleVector2Signal<this>;
 

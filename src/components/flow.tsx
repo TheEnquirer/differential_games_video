@@ -1,10 +1,8 @@
 import { Node, NodeProps } from "@motion-canvas/2d/lib/components";
 import { colorSignal, initial, signal } from "@motion-canvas/2d/lib/decorators";
 import { SimpleSignal } from "@motion-canvas/core/lib/signals";
-import { ThreadGenerator } from "@motion-canvas/core/lib/threading";
-import { Color, ColorSignal, PossibleColor, Vector2, Vector2Signal } from "@motion-canvas/core/lib/types";
-
-export type DerivativeFunc = (pos: Vector2) => number;
+import { tween } from "@motion-canvas/core/lib/tweening";
+import { Color, ColorSignal, PossibleColor, Vector2 } from "@motion-canvas/core/lib/types";
 
 export interface ParticleProps extends NodeProps {
 	readonly max_trail_length?: number;
@@ -12,13 +10,6 @@ export interface ParticleProps extends NodeProps {
 	readonly head_radius?: number;
 	readonly tail_width?: number;
 }
-
-export type ParticleAnimateConfig = Readonly<{
-	frames: number,
-	frame_step: number,
-	sub_steps: number,
-	trail_every?: number,
-}>;
 
 export class Particle extends Node {
 	@initial(new Color("#000"))
@@ -88,58 +79,16 @@ export class Particle extends Node {
 	}
 
 	moveBy(delta: Vector2) {
-		this.recordTrail();
-		this.moveByNoTrail(delta);
-	}
-
-	moveByNoTrail(delta: Vector2) {
 		this.position(this.position().add(delta));
 	}
 
-	simulate(step: number, sub_steps: number, derivative: DerivativeFunc, record_trail?: boolean) {
-		step = step / sub_steps;
-
-		for (let i = 0; i < sub_steps; i++) {
-			this.moveByNoTrail(new Vector2(1, derivative(this.position())).scale(step));
-		}
-
-		if (record_trail) {
-			this.recordTrail();
-		}
+	moveDifferential(f: (pos: Vector2) => number, delta: number) {
+		this.moveBy(new Vector2(1, f(this.position())).scale(delta));
 	}
 
-	static simulateDescendants(
-		target: Node,
-		step: number,
-		sub_steps: number,
-		derivative: DerivativeFunc,
-		record_trail?: boolean,
-	) {
-		for (const child of target.children()) {
-			if (child instanceof Particle) {
-				child.simulate(step, sub_steps, derivative, record_trail);
-			}
-
-			Particle.simulateDescendants(child, step, sub_steps, derivative, record_trail);
-		}
-	}
-
-	static *animateDescendants(
-		target: Node,
-		{
-			frames,
-			frame_step,
-			sub_steps,
-			trail_every,
-		}: ParticleAnimateConfig,
-		derivative: DerivativeFunc,
-	): ThreadGenerator {
-		trail_every ??= 1;
-
-		for (let i = 0; i < frames; i++) {
-			yield;
-			Particle.simulateDescendants(target, frame_step, sub_steps, derivative, i % trail_every === 0);
-		}
+	moveFunctional(f: (x: number) => number, delta: number) {
+		const x = this.position().x + delta;
+		this.position(new Vector2(x, f(x)));
 	}
 }
 
@@ -181,4 +130,90 @@ class Trail {
 			yield i;
 		}
 	}
+}
+
+// === Animation === //
+
+export type ParticleSimulator = (particle: Particle, delta: number) => void;
+
+export type ParticleConfig = Readonly<{
+	max_step_size: number,
+	trail_node_every: number,
+}>;
+
+export const DEFAULT_PARTICLE_CONFIG: ParticleConfig = {
+	max_step_size: 0.1,
+	trail_node_every: 0.1,
+}
+
+export function* animateParticles(
+	targets: Node | Particle[],
+	simulator: ParticleSimulator,
+	distance: number,
+	seconds: number,
+	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+) {
+	// Collect all relevant particles
+	let particles: Particle[];
+
+	if (targets instanceof Array) {
+		particles = targets;
+	} else {
+		particles = [];
+
+		const recursive = (part: Node) => {
+			if (part instanceof Particle) {
+				particles.push(part);
+			}
+
+			for (const child of part.children()) {
+				recursive(child);
+			}
+		};
+
+		recursive(targets);
+	}
+
+	// Run the loop
+	let last_dist = 0;
+	let dist_since_trail = config.max_step_size;  // We always want a trail at our starting position.
+
+	yield* tween(seconds, time => {
+		// Figure out how much distance we should travel
+		const curr_dist = time * distance;
+
+		// Compute the delta we need to traverse on this frame
+		let remaining_delta = curr_dist - last_dist;
+		last_dist = curr_dist;
+
+		// While we still have some delta to go
+		while (remaining_delta > 0) {
+			// Take off at most `max_step_size` from it.
+			const step_delta = Math.min(remaining_delta, config.max_step_size);
+			remaining_delta -= step_delta;
+
+			// Simulate every particle
+			for (const particle of particles) {
+				// Record the trail if we've gone too far.
+				if (dist_since_trail >= config.trail_node_every) {
+					particle.recordTrail();
+				}
+				simulator(particle, step_delta);
+			}
+
+			// Reset the trail distance accumulator if we just pushed one.
+			if (dist_since_trail >= config.trail_node_every) {
+				dist_since_trail = 0;
+			}
+			dist_since_trail += step_delta;
+		}
+	});
+}
+
+export function differentialSimulator(f: (pos: Vector2) => number): ParticleSimulator {
+	return (particle, delta) => particle.moveDifferential(f, delta);
+}
+
+export function functionalSimulator(f: (x: number) => number): ParticleSimulator {
+	return (particle, delta) => particle.moveFunctional(f, delta);
 }

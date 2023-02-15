@@ -1,7 +1,7 @@
 import { useScene2D } from '@motion-canvas/2d';
 import { Node, Shape } from '@motion-canvas/2d/lib/components';
 import { ThreadGenerator } from '@motion-canvas/core/lib/threading';
-import { easeInCubic, easeOutBounce, easeOutElastic, TimingFunction } from '@motion-canvas/core/lib/tweening';
+import { easeInCubic, easeOutElastic, TimingFunction } from '@motion-canvas/core/lib/tweening';
 import { Vector2 } from "@motion-canvas/core/lib/types";
 
 export type ShapeAnimator<T = Shape> = (target: T) => ThreadGenerator;

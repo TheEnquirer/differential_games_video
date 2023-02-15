@@ -11,8 +11,20 @@
       "targetTime": 4.340859375000001
     },
     {
+      "name": "alice equations",
+      "targetTime": 6.085729166666667
+    },
+    {
+      "name": "graph",
+      "targetTime": 8.6234375
+    },
+    {
+      "name": "bob equations",
+      "targetTime": 10.449270833333333
+    },
+    {
       "name": "scene end",
-      "targetTime": 8.033333333333335
+      "targetTime": 14.643958333333336
     }
   ]
 }

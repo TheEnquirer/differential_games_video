@@ -1,10 +1,11 @@
 import { makeScene2D } from "@motion-canvas/2d";
-import { Rect, Shape, Text } from "@motion-canvas/2d/lib/components";
-import { all, waitFor, waitUntil } from "@motion-canvas/core/lib/flow";
+import { Latex, Rect, Shape, Text } from "@motion-canvas/2d/lib/components";
+import { waitUntil } from "@motion-canvas/core/lib/flow";
 import { createRef } from "@motion-canvas/core/lib/utils";
 import { Graph } from "../components/graph";
 import { animateSpawn, dropIn, growIn } from "../components/animations";
-import { easeOutCubic, easeOutElastic, easeOutExpo } from "@motion-canvas/core/lib/tweening";
+import { easeOutExpo } from "@motion-canvas/core/lib/tweening";
+import { Vector2 } from "@motion-canvas/core/lib/types";
 
 export default makeScene2D(function* (view) {
 	// Rules text
@@ -41,18 +42,33 @@ export default makeScene2D(function* (view) {
 	const board = createRef<Graph>();
 
 	yield* waitUntil("the board");
-	yield* all(
-		animateSpawn(
-			view,
-			<Graph ref={board} y={70} width={750} height={750} view_distance={10} />,
-			growIn(1, easeOutExpo),
-		),
-		alice().position(alice().position().addX(-500), 1, easeOutExpo),
-		bob().position(bob().position().addX(500), 1, easeOutExpo),
+	yield animateSpawn(
+		view,
+		<Graph ref={board} y={70} width={750} height={750} view_distance={10} />,
+		growIn(1, easeOutExpo),
 	);
+	yield alice().position(alice().position().addX(-500), 1, easeOutExpo);
+	yield* bob().position(bob().position().addX(500), 1, easeOutExpo);
 
 	// Alice Equations
-	// TODO
+	yield* waitUntil("alice equations");
+	yield animateSpawn(
+		view,
+		<Latex scale={new Vector2(4)} position={alice().position()} tex="\alpha, \beta, \gamma \in \mathbb{R}" />,
+		growIn(1, easeOutExpo),
+	);
+	yield* alice().position(alice().position().addY(300), 1, easeOutExpo);
+
+	yield* waitUntil("graph");
+
+	// Bob Equations
+	yield* waitUntil("bob equations");
+	yield animateSpawn(
+		view,
+		<Latex scale={new Vector2(4)} position={bob().position()} tex="f: \mathbb{R} \to \mathbb{R}" />,
+		growIn(1, easeOutExpo),
+	);
+	yield* bob().position(bob().position().addY(300), 1, easeOutExpo);
 
 	yield* waitUntil("scene end");
 });

@@ -4,7 +4,7 @@ import { chain, waitFor } from '@motion-canvas/core/lib/flow';
 import { easeOutBounce } from '@motion-canvas/core/lib/tweening';
 import { Vector2 } from '@motion-canvas/core/lib/types';
 import { createRef } from '@motion-canvas/core/lib/utils';
-import { Particle } from '../components/flow';
+import { animateParticles, differentialSimulator, Particle } from '../components/flow';
 import { Graph } from '../components/graph';
 
 export default makeScene2D(function* (view) {
@@ -48,13 +48,10 @@ export default makeScene2D(function* (view) {
 
 	yield* waitFor(1);
 
-	yield* Particle.animateDescendants(
+	yield* animateParticles(
 		graph(),
-		{
-			frame_step: 0.1,
-			frames: 60,
-			sub_steps: 1,
-		},
-		({ x, y }) => x - y,
+		differentialSimulator(({ x, y }) => x - y),
+		10,
+		1,
 	);
 });
