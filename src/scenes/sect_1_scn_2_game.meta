@@ -16,15 +16,19 @@
     },
     {
       "name": "graph",
-      "targetTime": 8.6234375
+      "targetTime": 7.778749999999999
     },
     {
       "name": "bob equations",
-      "targetTime": 10.449270833333333
+      "targetTime": 10.6925
+    },
+    {
+      "name": "lambda",
+      "targetTime": 14.200937499999998
     },
     {
       "name": "scene end",
-      "targetTime": 14.643958333333336
+      "targetTime": 16.864062500000003
     }
   ]
 }

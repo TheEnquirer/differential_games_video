@@ -36,7 +36,7 @@ export default makeScene2D(function* (view) {
 			const particle = createRef<Particle>();
 
 			graph()
-				.content_container()
+				.container()
 				.add(<Particle ref={particle} x={x} y={y} head_radius={0} max_trail_length={20} color="#ffbc03" />);
 
 			yield chain(

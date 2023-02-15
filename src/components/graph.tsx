@@ -18,7 +18,7 @@ export class Graph extends Rect {
 	@signal()
 	public declare readonly view_distance: SimpleSignal<number, this>;
 
-	public readonly content_container = createRef<Node>();
+	public readonly container = createRef<Node>();
 
 	constructor(props: GraphProps) {
 		super(props);
@@ -52,7 +52,7 @@ export class Graph extends Rect {
 				}}
 				size={() => this.size().add(new Vector2(2 * spacing()))}
 			/>
-			<Node ref={this.content_container} position={() => scaled_center().scale(-1)} scale={scale_factor}>
+			<Node ref={this.container} position={() => scaled_center().scale(-1)} scale={scale_factor}>
 				{props.children}
 			</Node>
 		</>);

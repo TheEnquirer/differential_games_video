@@ -139,12 +139,19 @@ export type ParticleSimulator = (particle: Particle, delta: number) => void;
 export type ParticleConfig = Readonly<{
 	max_step_size: number,
 	trail_node_every: number,
+	push_start_to_trail: boolean,
 }>;
 
 export const DEFAULT_PARTICLE_CONFIG: ParticleConfig = {
 	max_step_size: 0.1,
 	trail_node_every: 0.1,
-}
+	push_start_to_trail: true,
+};
+
+export const DEFAULT_PARTICLE_CONFIG_NO_INIT_TRAIL: ParticleConfig = {
+	...DEFAULT_PARTICLE_CONFIG,
+	push_start_to_trail: false,
+};
 
 export function* animateParticles(
 	targets: Node | Particle[],
@@ -176,7 +183,9 @@ export function* animateParticles(
 
 	// Run the loop
 	let last_dist = 0;
-	let dist_since_trail = config.max_step_size;  // We always want a trail at our starting position.
+	let dist_since_trail = config.push_start_to_trail ?
+		config.max_step_size :
+		0;
 
 	yield* tween(seconds, time => {
 		// Figure out how much distance we should travel
@@ -216,4 +225,29 @@ export function differentialSimulator(f: (pos: Vector2) => number): ParticleSimu
 
 export function functionalSimulator(f: (x: number) => number): ParticleSimulator {
 	return (particle, delta) => particle.moveFunctional(f, delta);
+}
+
+export function fieldSimulator(f: (pos: Vector2) => Vector2): ParticleSimulator {
+	return (particle, delta) => particle.moveBy(f(particle.position()).scale(delta));
+}
+
+export function makeFunctionGraph(
+	f: (x: number) => number,
+	start_x: number,
+	end_x: number,
+	config?: ParticleConfig,
+): Particle {
+	const particle = new Particle({
+		x: start_x,
+		y: f(start_x),
+	});
+
+	animateParticles(
+		[particle],
+		functionalSimulator(f),
+		end_x - start_x,
+		0,
+		config,
+	).next();
+	return particle;
 }
