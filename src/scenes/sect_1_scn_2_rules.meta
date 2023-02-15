@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "seed": 718885071,
+  "timeEvents": [
+    {
+      "name": "the characters",
+      "targetTime": 2.0369589241338564
+    },
+    {
+      "name": "the board",
+      "targetTime": 5.352765072572941
+    },
+    {
+      "name": "main equation",
+      "targetTime": 6.366666666666666
+    },
+    {
+      "name": "alice equations",
+      "targetTime": 8.790726489317237
+    },
+    {
+      "name": "graph",
+      "targetTime": 10.769463929344017
+    },
+    {
+      "name": "points",
+      "targetTime": 13.576288019564943
+    },
+    {
+      "name": "bob equations",
+      "targetTime": 15.849199404199068
+    },
+    {
+      "name": "such that it passes",
+      "targetTime": 18.181711445047274
+    },
+    {
+      "name": "but is unique",
+      "targetTime": 20.214127476484776
+    },
+    {
+      "name": "lambda",
+      "targetTime": 21.96454971122794
+    },
+    {
+      "name": "question",
+      "targetTime": 24.0645612746738
+    },
+    {
+      "name": "under what conditions",
+      "targetTime": 26.05249796085355
+    },
+    {
+      "name": "scene end",
+      "targetTime": 29.247479234539036
+    }
+  ]
+}

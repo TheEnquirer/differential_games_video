@@ -148,8 +148,9 @@ export const DEFAULT_PARTICLE_CONFIG: ParticleConfig = {
 	push_start_to_trail: true,
 };
 
-export const DEFAULT_PARTICLE_CONFIG_NO_INIT_TRAIL: ParticleConfig = {
-	...DEFAULT_PARTICLE_CONFIG,
+export const DEFAULT_PARTICLE_CONFIG_NO_TRAIL: ParticleConfig = {
+	max_step_size: DEFAULT_PARTICLE_CONFIG.max_step_size,
+	trail_node_every: Infinity,
 	push_start_to_trail: false,
 };
 
@@ -221,6 +222,10 @@ export function* animateParticles(
 
 export function differentialSimulator(f: (pos: Vector2) => number): ParticleSimulator {
 	return (particle, delta) => particle.moveDifferential(f, delta);
+}
+
+export function differentialSimulatorLeft(f: (pos: Vector2) => number): ParticleSimulator {
+	return (particle, delta) => particle.moveDifferential(f, -delta);
 }
 
 export function functionalSimulator(f: (x: number) => number): ParticleSimulator {
