@@ -10,16 +10,22 @@ import { Graph } from '../components/graph';
 export default makeScene2D(function* (view) {
 	const graph = createRef<Graph>();
 
+	const circles: [number, string][] = [
+		[-3, "green"],
+		[-2, "green"],
+		[-1, "green"],
+		[0, "red"],
+		[1, "green"],
+		[2, "green"],
+		[3, "green"],
+		[4, "blue"],
+	]
+
 	view.add(<>
 		<Graph ref={graph} width={1200} height={600} graph_center={new Vector2(0, 0)} view_distance={5}>
-			<Circle x={-3} width={1} height={1} fill="green" />
-			<Circle x={-2} width={1} height={1} fill="green" />
-			<Circle x={-1} width={1} height={1} fill="green" />
-			<Circle x={0} width={1} height={1} fill="red" />
-			<Circle x={1} width={1} height={1} fill="green" />
-			<Circle x={2} width={1} height={1} fill="green" />
-			<Circle x={3} width={1} height={1} fill="green" />
-			<Circle x={4} width={1} height={1} fill="blue" />
+			{circles.map(c =>
+				<Circle x={c[0]} width={1} height={1} fill={c[1]} />
+			)}
 		</Graph>
 	</>);
 
