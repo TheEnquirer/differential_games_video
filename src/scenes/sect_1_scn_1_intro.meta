@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "seed": 2589188098,
+  "timeEvents": [
+    {
+      "name": "start delay",
+      "targetTime": 0.13687499999999994
+    },
+    {
+      "name": "we think",
+      "targetTime": 1.1455493458830346
+    },
+    {
+      "name": "scene end",
+      "targetTime": 2.7437500000000004
+    }
+  ]
+}

@@ -1,10 +1,7 @@
 {
 	"extends": "@motion-canvas/2d/tsconfig.project.json",
 	"compilerOptions": {
-		"strict": true,
-		"noImplicitOverride": true,
-		"baseUrl": "src",
-		"experimentalDecorators": true,
+		"baseUrl": "src"
 	},
 	"include": [
 		"src"

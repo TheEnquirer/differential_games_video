@@ -1,9 +1,10 @@
 import { makeProject } from '@motion-canvas/core/lib';
 
+import sect_1_scn_1_intro from './scenes/sect_1_scn_1_intro?scene';
+import sect_1_scn_2_game from './scenes/sect_1_scn_2_game?scene';
 import example from './scenes/example?scene';
-import test_scene from './scenes/test_scene?scene';
 
 export default makeProject({
-	scenes: [example, test_scene],
+	scenes: [sect_1_scn_1_intro, sect_1_scn_2_game, example],
 	background: '#ece6e2',
 });

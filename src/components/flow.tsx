@@ -1,6 +1,7 @@
 import { Node, NodeProps } from "@motion-canvas/2d/lib/components";
 import { colorSignal, initial, signal } from "@motion-canvas/2d/lib/decorators";
 import { SimpleSignal } from "@motion-canvas/core/lib/signals";
+import { ThreadGenerator } from "@motion-canvas/core/lib/threading";
 import { Color, ColorSignal, PossibleColor, Vector2, Vector2Signal } from "@motion-canvas/core/lib/types";
 
 export type DerivativeFunc = (pos: Vector2) => number;
@@ -20,10 +21,6 @@ export type ParticleAnimateConfig = Readonly<{
 }>;
 
 export class Particle extends Node {
-	// FIXME: This is a bug with VSCode's IntelliSense. Figure out why this is happening
-	// and remove this ugly hack.
-	public declare readonly position: Vector2Signal<this>;
-
 	@initial(new Color("#000"))
 	@colorSignal()
 	public declare readonly color: ColorSignal<this>;
@@ -136,7 +133,7 @@ export class Particle extends Node {
 			trail_every,
 		}: ParticleAnimateConfig,
 		derivative: DerivativeFunc,
-	) {
+	): ThreadGenerator {
 		trail_every ??= 1;
 
 		for (let i = 0; i < frames; i++) {

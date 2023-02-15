@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "seed": 718885071,
+  "timeEvents": [
+    {
+      "name": "the characters",
+      "targetTime": 1.6999999999999993
+    },
+    {
+      "name": "the board",
+      "targetTime": 4.340859375000001
+    },
+    {
+      "name": "scene end",
+      "targetTime": 8.033333333333335
+    }
+  ]
+}
