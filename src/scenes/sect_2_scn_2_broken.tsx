@@ -1,10 +1,13 @@
 import { makeScene2D } from "@motion-canvas/2d";
 import { Latex, Text } from "@motion-canvas/2d/lib/components";
-import { waitFor, waitUntil } from "@motion-canvas/core/lib/flow";
+import { all, chain, every, waitFor, waitUntil } from "@motion-canvas/core/lib/flow";
 import { easeOutExpo } from "@motion-canvas/core/lib/tweening";
 import { Vector2 } from "@motion-canvas/core/lib/types";
-import { createRef } from "@motion-canvas/core/lib/utils";
+import { createRef, useProject, useRandom } from "@motion-canvas/core/lib/utils";
+import { Graph } from "../components/graph";
 import { animateSpawn, dropOut, growIn, growInFrom as growOutTo, slag } from "../components/animations";
+import { animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, differentialSimulator, Particle } from "../components/flow";
+import { PlaybackState } from "@motion-canvas/core";
 
 export default makeScene2D(function* (view) {
 	// Display jump-cut text
@@ -63,5 +66,51 @@ export default makeScene2D(function* (view) {
 	}
 	yield* waitFor(1);
 
-	yield* waitUntil("scene end");
+	const graph = createRef<Graph>();
+	yield animateSpawn(
+		view,
+		<Graph ref={graph} width={1000} height={1000}>
+			<Particle x={-11} y={8} max_trail_length={400} color="red" />
+			<Particle x={-11.5} y={-4} max_trail_length={400} color="blue" />
+			<Particle x={-12} y={0} max_trail_length={400} color="green" />
+		</Graph>,
+		growIn(),
+	);
+
+	// Animate those particles
+	// TODO: Extract into its own simulation file.
+	//  Give animation to a dedicated animation thread to avoid this hacky nonsense.
+	const rng = useRandom();
+	const is_seeking = useProject().playbackState() === PlaybackState.Seeking;
+
+	for (let i = 0; i < 10; i++) {
+		if (!is_seeking) {
+			for (let j = 0; j < 50; j++) {
+				const particle = <Particle x={rng.nextFloat(-15, 10)} y={rng.nextFloat(-10, 10)} max_trail_length={20} />;
+				graph().container().add(particle);
+				particle.moveToBottom();
+			}
+		}
+
+		yield* animateParticles(
+			graph(),
+			differentialSimulator(({ x, y }) => {
+				const d = (x - y) / Math.pow(x - 2, 2);
+				return Math.max(Math.min(d, 10), -10);
+			}),
+			5, 1,
+		);
+
+		if (!is_seeking) {
+			for (const child of graph().container().children()) {
+				if (child instanceof Particle && child.position().x > 10 + child.max_trail_length) {
+					child.remove();
+				}
+			}
+		}
+
+		if (i === 8) {
+			yield dropOut(1)(graph());
+		}
+	}
 });

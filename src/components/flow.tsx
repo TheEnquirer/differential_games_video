@@ -24,6 +24,10 @@ export class Particle extends Node {
 	@signal()
 	public declare readonly tail_width: SimpleSignal<number, this>;
 
+	get max_trail_length() {
+		return this.trail.max_length;
+	}
+
 	private readonly trail: Trail;
 
 	constructor(props: ParticleProps) {
@@ -279,4 +283,3 @@ export function functionalSimulator(f: (x: number) => number): ParticleSimulator
 export function fieldSimulator(f: (pos: Vector2) => Vector2): ParticleSimulator {
 	return (particle, delta) => particle.moveBy(f(particle.position()).scale(delta));
 }
-
