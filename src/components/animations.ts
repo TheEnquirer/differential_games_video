@@ -19,7 +19,7 @@ export function slag(duration: number): NodeAnimator<Node> {
 }
 
 function getVerticalDistanceToOcclude(target: Node): number {
-	return useScene2D().getSize().y / 2 + target.cacheRect().height + 200;
+	return useScene2D().getSize().y / 2 + target.cacheRect().height + 250;
 }
 
 export function dropOut(duration: number) {
@@ -44,5 +44,12 @@ export function growIn(duration: number = 1, tween: TimingFunction = easeOutExpo
 
 		target.scale(Vector2.zero);
 		yield* target.scale(old_scale, duration, tween);
+	}
+}
+
+export function growInFrom(delta: Vector2, duration: number, tween: TimingFunction = easeOutExpo) {
+	return function* (target: Node) {
+		yield target.position(target.position().add(delta), duration, tween);
+		yield* growIn(duration, tween)(target);
 	}
 }
