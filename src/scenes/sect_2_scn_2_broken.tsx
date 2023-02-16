@@ -5,7 +5,7 @@ import { easeOutExpo } from "@motion-canvas/core/lib/tweening";
 import { Vector2 } from "@motion-canvas/core/lib/types";
 import { createRef, useProject, useRandom } from "@motion-canvas/core/lib/utils";
 import { Graph } from "../components/graph";
-import { animateSpawn, dropOut, growIn, growInFrom as growOutTo, slag } from "../components/animations";
+import { animateSpawn, dropOut, growIn, growOutTo as growOutTo, slag } from "../components/animations";
 import { animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, differentialSimulator, Particle } from "../components/flow";
 import { PlaybackState } from "@motion-canvas/core";
 

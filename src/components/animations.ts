@@ -11,10 +11,17 @@ export function animateSpawn<T extends Node>(parent: Node, target: T, animator: 
 	return animator(target);
 }
 
-export function slag(duration: number): NodeAnimator<Node> {
+export function slag(duration: number, drop_by: number = 30): NodeAnimator<Node> {
 	return function* (target) {
-		yield target.position(target.position().add(new Vector2(0, 30)), duration);
+		yield target.position(target.position().add(new Vector2(0, drop_by)), duration);
 		yield* target.rotation(-5, duration);
+	}
+}
+
+export function un_slag(duration: number, drop_by: number = 30): NodeAnimator<Node> {
+	return function* (target) {
+		yield target.position(target.position().add(new Vector2(0, -drop_by)), duration);
+		yield* target.rotation(0, duration);
 	}
 }
 
@@ -47,7 +54,7 @@ export function growIn(duration: number = 1, tween: TimingFunction = easeOutExpo
 	}
 }
 
-export function growInFrom(delta: Vector2, duration: number, tween: TimingFunction = easeOutExpo) {
+export function growOutTo(delta: Vector2, duration: number, tween: TimingFunction = easeOutExpo) {
 	return function* (target: Node) {
 		yield target.position(target.position().add(delta), duration, tween);
 		yield* growIn(duration, tween)(target);

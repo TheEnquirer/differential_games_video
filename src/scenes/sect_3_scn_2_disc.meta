@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "seed": 4051810315,
+  "timeEvents": [
+    {
+      "name": "scene start",
+      "targetTime": 0.27851220099214763
+    },
+    {
+      "name": "particle start",
+      "targetTime": 3.3947618796498586
+    },
+    {
+      "name": "where to",
+      "targetTime": 8.366666666666667
+    },
+    {
+      "name": "it could be zero",
+      "targetTime": 11.023541591820923
+    },
+    {
+      "name": "it could be 20",
+      "targetTime": 13.280530712880907
+    },
+    {
+      "name": "choose it",
+      "targetTime": 16.762465437462758
+    },
+    {
+      "name": "if illegal",
+      "targetTime": 19.618678729260196
+    },
+    {
+      "name": "best choice",
+      "targetTime": 26.545643445554383
+    },
+    {
+      "name": "scene end",
+      "targetTime": 29.400008412810507
+    }
+  ]
+}
