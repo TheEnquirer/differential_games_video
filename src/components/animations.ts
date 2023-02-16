@@ -1,7 +1,7 @@
 import { useScene2D } from '@motion-canvas/2d';
 import { Node, Shape } from '@motion-canvas/2d/lib/components';
 import { ThreadGenerator } from '@motion-canvas/core/lib/threading';
-import { easeInCubic, easeOutElastic, TimingFunction } from '@motion-canvas/core/lib/tweening';
+import { easeInCubic, easeOutElastic, easeOutExpo, TimingFunction } from '@motion-canvas/core/lib/tweening';
 import { Vector2 } from "@motion-canvas/core/lib/types";
 
 export type NodeAnimator<T> = (target: T) => ThreadGenerator;
@@ -38,7 +38,7 @@ export function dropIn(duration: number) {
 	}
 }
 
-export function growIn(duration: number, tween: TimingFunction) {
+export function growIn(duration: number = 1, tween: TimingFunction = easeOutExpo) {
 	return function* (target: Node) {
 		const old_scale = target.scale();
 

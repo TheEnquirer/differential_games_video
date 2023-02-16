@@ -6,7 +6,7 @@ import { Graph } from "../components/graph";
 import { animateSpawn, dropIn, dropOut, growIn } from "../components/animations";
 import { easeInBounce, easeInExpo, easeInOutExpo, easeOutBounce, easeOutExpo } from "@motion-canvas/core/lib/tweening";
 import { Vector2 } from "@motion-canvas/core/lib/types";
-import { animateParticles, DEFAULT_PARTICLE_CONFIG, DEFAULT_PARTICLE_CONFIG_NO_TRAIL, differentialSimulator, differentialSimulatorLeft, fieldSimulator, functionalSimulator, Particle } from "../components/flow";
+import { animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, DEFAULT_PARTICLE_CONFIG_NO_TRAIL, differentialSimulator, fieldSimulator, functionalSimulator, Particle } from "../components/flow";
 
 export default makeScene2D(function* (view) {
 	// Rules text
@@ -27,7 +27,7 @@ export default makeScene2D(function* (view) {
 		<Rect ref={alice} fill="red" x={-100} width={50} height={50}>
 			<Text x={-10} y={100} fontStyle="center"> Alice </Text>
 		</Rect>,
-		growIn(1, easeOutExpo),
+		growIn(),
 	);
 
 	const bob = createRef<Shape>();
@@ -36,7 +36,7 @@ export default makeScene2D(function* (view) {
 		<Rect ref={bob} fill="blue" x={100} width={50} height={50}>
 			<Text x={-10} y={100} fontStyle="center"> Bob </Text>
 		</Rect>,
-		growIn(1, easeOutExpo),
+		growIn(),
 	);
 
 	// Game board
@@ -46,7 +46,7 @@ export default makeScene2D(function* (view) {
 	yield animateSpawn(
 		view,
 		<Graph ref={board} y={70} width={750} height={750} view_distance={15} />,
-		growIn(1, easeOutExpo),
+		growIn(),
 	);
 	yield alice().position(alice().position().addX(-500), 1, easeOutExpo);
 	yield* bob().position(bob().position().addX(500), 1, easeOutExpo);
@@ -64,7 +64,7 @@ export default makeScene2D(function* (view) {
 			y={-400}
 			scale={new Vector2(4)}
 		/>,
-		growIn(1, easeOutExpo),
+		growIn(),
 	);
 
 	// Alice Equations
@@ -140,16 +140,16 @@ export default makeScene2D(function* (view) {
 	yield animateSpawn(
 		view,
 		<Latex scale={new Vector2(4)} position={bob().position()} tex="f: \mathbb{R} \to \mathbb{R}" />,
-		growIn(1, easeOutExpo),
+		growIn(),
 	);
 	yield* bob().position(bob().position().addY(300), 1, easeOutExpo);
 
 	// Such that it passes
 	yield* waitUntil("such that it passes");
 	const max_step_size = 0.005;
+	const func = differentialSimulator(({ x, y }: Vector2) => x - y);
 
 	const bob_solution = createRef<Particle>();
-	const func = ({ x, y }: Vector2) => x - y;
 	board().container().add(<Particle
 		ref={bob_solution}
 		x={1} y={2}
@@ -158,18 +158,8 @@ export default makeScene2D(function* (view) {
 		head_radius={0.4}
 		color={"darkblue"}
 	/>);
-	animateParticles(
-		[bob_solution()],
-		differentialSimulatorLeft(func),
-		5,
-		0,
-		{ ...DEFAULT_PARTICLE_CONFIG_NO_TRAIL, max_step_size },
-	).next();
-	yield* animateParticles(
-		[bob_solution()],
-		differentialSimulator(func),
-		20,
-		1,
+	yield* animateParticlesRange(
+		[bob_solution()], func, 10, 1,
 		{ ...DEFAULT_PARTICLE_CONFIG, max_step_size },
 	);
 
@@ -183,27 +173,9 @@ export default makeScene2D(function* (view) {
 		head_radius={0.4}
 		color={"darkred"}
 	/>);
-	animateParticles(
-		[alice_solution()],
-		differentialSimulatorLeft(func),
-		5,
-		0,
-		{ ...DEFAULT_PARTICLE_CONFIG_NO_TRAIL, max_step_size },
-	).next();
-	yield* animateParticles(
-		[alice_solution()],
-		differentialSimulator(func),
-		20,
-		1,
+	yield* animateParticlesRange(
+		[alice_solution()], func, 10, 1,
 		{ ...DEFAULT_PARTICLE_CONFIG, max_step_size },
-	);
-
-	// Lambda
-	yield* waitUntil("lambda");
-	yield animateSpawn(
-		view,
-		<Latex tex="\lambda" scale={new Vector2(20)} />,
-		growIn(1, easeOutExpo),
 	);
 
 	// Drop everything and move the characters to the center
@@ -220,10 +192,18 @@ export default makeScene2D(function* (view) {
 	yield bob().position(new Vector2(300, 100), 2, easeInOutExpo);
 	yield bob().scale(2, 2, easeInOutExpo);
 
-	yield animateSpawn(view, <Text y={-300} fontSize={100}> Who wins? </Text>, growIn(1, easeOutExpo));
+	yield animateSpawn(view, <Text y={-300} fontSize={100}> Who wins? </Text>, growIn());
 
 	yield* waitUntil("under what conditions");
-	yield animateSpawn(view, <Text y={-150} fontSize={80}> When? </Text>, growIn(1, easeOutExpo));
+	yield animateSpawn(view, <Text y={-150} fontSize={80}> When? </Text>, growIn());
+
+	// Lambda
+	yield* waitUntil("lambda");
+	yield animateSpawn(
+		view,
+		<Latex tex="\lambda" scale={new Vector2(20)} y={100} />,
+		growIn(),
+	);
 
 	yield* waitUntil("scene end");
 

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "seed": 2577226065,
+  "timeEvents": [
+    {
+      "name": "start",
+      "targetTime": 0.3735285383974472
+    },
+    {
+      "name": "neat theorem",
+      "targetTime": 2.664660908574214
+    },
+    {
+      "name": "non zero region",
+      "targetTime": 5.792588403836115
+    },
+    {
+      "name": "demo",
+      "targetTime": 7.301595465848001
+    },
+    {
+      "name": "region",
+      "targetTime": 11.85627328708976
+    },
+    {
+      "name": "requirements",
+      "targetTime": 14.87304853005867
+    },
+    {
+      "name": "req 1",
+      "targetTime": 17.97256051739838
+    },
+    {
+      "name": "req 2",
+      "targetTime": 20.013863175650215
+    },
+    {
+      "name": "scene end",
+      "targetTime": 22.895639903343465
+    }
+  ]
+}

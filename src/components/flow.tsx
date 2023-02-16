@@ -1,7 +1,7 @@
 import { Node, NodeProps } from "@motion-canvas/2d/lib/components";
 import { colorSignal, initial, signal } from "@motion-canvas/2d/lib/decorators";
 import { SimpleSignal } from "@motion-canvas/core/lib/signals";
-import { tween } from "@motion-canvas/core/lib/tweening";
+import { linear, TimingFunction, tween } from "@motion-canvas/core/lib/tweening";
 import { Color, ColorSignal, PossibleColor, Vector2 } from "@motion-canvas/core/lib/types";
 
 export interface ParticleProps extends NodeProps {
@@ -160,6 +160,7 @@ export function* animateParticles(
 	distance: number,
 	seconds: number,
 	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+	lerp: TimingFunction = linear,
 ) {
 	// Collect all relevant particles
 	let particles: Particle[];
@@ -190,7 +191,7 @@ export function* animateParticles(
 
 	yield* tween(seconds, time => {
 		// Figure out how much distance we should travel
-		const curr_dist = time * distance;
+		const curr_dist = lerp(time) * distance;
 
 		// Compute the delta we need to traverse on this frame
 		let remaining_delta = curr_dist - last_dist;
@@ -220,12 +221,55 @@ export function* animateParticles(
 	});
 }
 
-export function differentialSimulator(f: (pos: Vector2) => number): ParticleSimulator {
-	return (particle, delta) => particle.moveDifferential(f, delta);
+export function graphParticles(
+	targets: Node | Particle[],
+	simulator: ParticleSimulator,
+	distance: number,
+	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+) {
+	animateParticles(targets, simulator, distance, 0, config).next();
 }
 
-export function differentialSimulatorLeft(f: (pos: Vector2) => number): ParticleSimulator {
-	return (particle, delta) => particle.moveDifferential(f, -delta);
+export function warpParticles(
+	targets: Node | Particle[],
+	simulator: ParticleSimulator,
+	distance: number,
+	max_step_size = DEFAULT_PARTICLE_CONFIG.max_step_size,
+) {
+	graphParticles(targets, simulator, distance, {
+		max_step_size,
+		push_start_to_trail: false,
+		trail_node_every: Infinity,
+	});
+}
+
+export function* animateParticlesRange(
+	targets: Node | Particle[],
+	simulator: ParticleSimulator,
+	range: number,
+	seconds: number,
+	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+	lerp: TimingFunction = linear,
+) {
+	warpParticles(targets, invertSimulator(simulator), range, config.max_step_size);
+	yield* animateParticles(targets, simulator, range * 2, seconds, config, lerp);
+}
+
+export function graphParticlesRange(
+	targets: Node | Particle[],
+	simulator: ParticleSimulator,
+	range: number,
+	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+) {
+	animateParticlesRange(targets, simulator, range, 0, config).next();
+}
+
+export function invertSimulator(sim: ParticleSimulator): ParticleSimulator {
+	return (particle, delta) => sim(particle, -delta);
+}
+
+export function differentialSimulator(f: (pos: Vector2) => number): ParticleSimulator {
+	return (particle, delta) => particle.moveDifferential(f, delta);
 }
 
 export function functionalSimulator(f: (x: number) => number): ParticleSimulator {
@@ -236,23 +280,3 @@ export function fieldSimulator(f: (pos: Vector2) => Vector2): ParticleSimulator 
 	return (particle, delta) => particle.moveBy(f(particle.position()).scale(delta));
 }
 
-export function makeFunctionGraph(
-	f: (x: number) => number,
-	start_x: number,
-	end_x: number,
-	config?: ParticleConfig,
-): Particle {
-	const particle = new Particle({
-		x: start_x,
-		y: f(start_x),
-	});
-
-	animateParticles(
-		[particle],
-		functionalSimulator(f),
-		end_x - start_x,
-		0,
-		config,
-	).next();
-	return particle;
-}

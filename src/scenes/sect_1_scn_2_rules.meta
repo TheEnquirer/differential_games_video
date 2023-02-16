@@ -12,47 +12,47 @@
     },
     {
       "name": "main equation",
-      "targetTime": 6.366666666666666
+      "targetTime": 7.658810561026854
     },
     {
       "name": "alice equations",
-      "targetTime": 8.790726489317237
+      "targetTime": 12.026767004436039
     },
     {
       "name": "graph",
-      "targetTime": 10.769463929344017
+      "targetTime": 15.029529661820703
     },
     {
       "name": "points",
-      "targetTime": 13.576288019564943
+      "targetTime": 18.83136558117003
     },
     {
       "name": "bob equations",
-      "targetTime": 15.849199404199068
+      "targetTime": 21.049199404199065
     },
     {
       "name": "such that it passes",
-      "targetTime": 18.181711445047274
+      "targetTime": 26.48717915889484
     },
     {
       "name": "but is unique",
-      "targetTime": 20.214127476484776
-    },
-    {
-      "name": "lambda",
-      "targetTime": 21.96454971122794
+      "targetTime": 32.37359076322518
     },
     {
       "name": "question",
-      "targetTime": 24.0645612746738
+      "targetTime": 39.547893663956295
     },
     {
       "name": "under what conditions",
-      "targetTime": 26.05249796085355
+      "targetTime": 42.3931532132846
+    },
+    {
+      "name": "lambda",
+      "targetTime": 45.04928104476329
     },
     {
       "name": "scene end",
-      "targetTime": 29.247479234539036
+      "targetTime": 47.21568129136387
     }
   ]
 }
