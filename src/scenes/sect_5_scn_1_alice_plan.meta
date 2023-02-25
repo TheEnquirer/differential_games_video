@@ -16,11 +16,27 @@
     },
     {
       "name": "factorable quadratic",
-      "targetTime": 3.3444247494524397
+      "targetTime": 4.733220538683355
+    },
+    {
+      "name": "graph collapse",
+      "targetTime": 7.0561338484954
+    },
+    {
+      "name": "puts the points",
+      "targetTime": 8.613218388562535
+    },
+    {
+      "name": "alice's hope 1",
+      "targetTime": 10.633333333333333
+    },
+    {
+      "name": "alice's hope 2",
+      "targetTime": 14.28315563091336
     },
     {
       "name": "scene end",
-      "targetTime": 6.229745405742241
+      "targetTime": 20.8676048961626
     }
   ]
 }
