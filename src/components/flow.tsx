@@ -1,8 +1,12 @@
 import { Node, NodeProps } from "@motion-canvas/2d/lib/components";
 import { colorSignal, initial, signal } from "@motion-canvas/2d/lib/decorators";
+import { all, any, every, run, waitFor } from "@motion-canvas/core/lib/flow";
 import { SimpleSignal } from "@motion-canvas/core/lib/signals";
+import { cancel, ThreadGenerator } from "@motion-canvas/core/lib/threading";
 import { linear, TimingFunction, tween } from "@motion-canvas/core/lib/tweening";
-import { Color, ColorSignal, PossibleColor, Vector2 } from "@motion-canvas/core/lib/types";
+import { Color, ColorSignal, PossibleColor, Rect, Vector2 } from "@motion-canvas/core/lib/types";
+import { createRef, Reference, useRandom } from "@motion-canvas/core/lib/utils";
+import { DynCollection, IntoDynCollection } from "./collection";
 
 export interface ParticleProps extends NodeProps {
 	readonly max_trail_length?: number;
@@ -28,7 +32,7 @@ export class Particle extends Node {
 		return this.trail.max_length;
 	}
 
-	private readonly trail: Trail;
+	private trail: Trail;
 
 	constructor(props: ParticleProps) {
 		super(props);
@@ -75,6 +79,10 @@ export class Particle extends Node {
 
 		// Render children
 		super.draw(context);
+	}
+
+	resetTrail() {
+		this.trail = new Trail(this.max_trail_length);
 	}
 
 	recordTrail() {
@@ -138,54 +146,39 @@ class Trail {
 
 // === Animation === //
 
+export type ParticleList = DynCollection<Particle>;
+
+export type IntoParticleList = IntoDynCollection<Particle>;
+
 export type ParticleSimulator = (particle: Particle, delta: number) => void;
 
-export type ParticleConfig = Readonly<{
+export type ParticleSimulatorConfig = Readonly<{
 	max_step_size: number,
 	trail_node_every: number,
 	push_start_to_trail: boolean,
 }>;
 
-export const DEFAULT_PARTICLE_CONFIG: ParticleConfig = {
+export const DEFAULT_PARTICLE_CONFIG: ParticleSimulatorConfig = {
 	max_step_size: 0.1,
 	trail_node_every: 0.1,
 	push_start_to_trail: true,
 };
 
-export const DEFAULT_PARTICLE_CONFIG_NO_TRAIL: ParticleConfig = {
+export const DEFAULT_PARTICLE_CONFIG_NO_TRAIL: ParticleSimulatorConfig = {
 	max_step_size: DEFAULT_PARTICLE_CONFIG.max_step_size,
 	trail_node_every: Infinity,
 	push_start_to_trail: false,
 };
 
 export function* animateParticles(
-	targets: Node | Particle[],
+	targets: IntoParticleList,
 	simulator: ParticleSimulator,
 	distance: number,
 	seconds: number,
-	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+	config: ParticleSimulatorConfig = DEFAULT_PARTICLE_CONFIG,
 	lerp: TimingFunction = linear,
 ) {
-	// Collect all relevant particles
-	let particles: Particle[];
-
-	if (targets instanceof Array) {
-		particles = targets;
-	} else {
-		particles = [];
-
-		const recursive = (part: Node) => {
-			if (part instanceof Particle) {
-				particles.push(part);
-			}
-
-			for (const child of part.children()) {
-				recursive(child);
-			}
-		};
-
-		recursive(targets);
-	}
+	const particles = DynCollection.from(Particle, targets);
 
 	// Run the loop
 	let last_dist = 0;
@@ -226,16 +219,16 @@ export function* animateParticles(
 }
 
 export function graphParticles(
-	targets: Node | Particle[],
+	targets: IntoParticleList,
 	simulator: ParticleSimulator,
 	distance: number,
-	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+	config: ParticleSimulatorConfig = DEFAULT_PARTICLE_CONFIG,
 ) {
 	animateParticles(targets, simulator, distance, 0, config).next();
 }
 
 export function warpParticles(
-	targets: Node | Particle[],
+	targets: IntoParticleList,
 	simulator: ParticleSimulator,
 	distance: number,
 	max_step_size = DEFAULT_PARTICLE_CONFIG.max_step_size,
@@ -248,11 +241,11 @@ export function warpParticles(
 }
 
 export function* animateParticlesRange(
-	targets: Node | Particle[],
+	targets: IntoParticleList,
 	simulator: ParticleSimulator,
 	range: number,
 	seconds: number,
-	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+	config: ParticleSimulatorConfig = DEFAULT_PARTICLE_CONFIG,
 	lerp: TimingFunction = linear,
 ) {
 	warpParticles(targets, invertSimulator(simulator), range, config.max_step_size);
@@ -260,10 +253,10 @@ export function* animateParticlesRange(
 }
 
 export function graphParticlesRange(
-	targets: Node | Particle[],
+	targets: IntoParticleList,
 	simulator: ParticleSimulator,
 	range: number,
-	config: ParticleConfig = DEFAULT_PARTICLE_CONFIG,
+	config: ParticleSimulatorConfig = DEFAULT_PARTICLE_CONFIG,
 ) {
 	animateParticlesRange(targets, simulator, range, 0, config).next();
 }
@@ -282,4 +275,109 @@ export function functionalSimulator(f: (x: number) => number): ParticleSimulator
 
 export function fieldSimulator(f: (pos: Vector2) => Vector2): ParticleSimulator {
 	return (particle, delta) => particle.moveBy(f(particle.position()).scale(delta));
+}
+
+// === Flow Field === //
+
+export type ParticleFlowConfig = Readonly<{
+	container: Node,
+	simulator: ParticleSimulator,
+	dist_per_sec: number,
+	duration: number,
+	spawn_zone: Rect,
+	spawn_count: number,
+	additional_targets?: ParticleList,
+	simulation_config?: ParticleSimulatorConfig,
+	visible_zone?: Rect | number,
+	particle_factory?: (ref: Reference<Particle>) => void,
+}>
+
+export function animateParticleField(config: ParticleFlowConfig) {
+	// Decompose config
+	let {
+		container,
+		simulator,
+		dist_per_sec,
+		duration,
+		spawn_zone,
+		spawn_count,
+		additional_targets,
+		simulation_config,
+		visible_zone,
+		particle_factory,
+	} = config;
+
+	additional_targets ??= DynCollection.from(Particle, container);
+	simulation_config ??= DEFAULT_PARTICLE_CONFIG;
+	const visible_zone_rect = visible_zone instanceof Rect ?
+		visible_zone :
+		spawn_zone.expand(visible_zone ?? 0);
+
+	particle_factory ??= particle => {
+		<Particle
+			ref={particle}
+			x={rng.nextFloat(spawn_zone.left, spawn_zone.right)}
+			y={rng.nextFloat(spawn_zone.top, spawn_zone.bottom)}
+		/>;
+	}
+
+	// Spawn an original batch
+	const rng = useRandom();
+	const managed = new DynCollection<Particle>();
+
+	for (let i = 0; i < spawn_count; i++) {
+		const particle = createRef<Particle>();
+		particle_factory(particle);
+		container.add(particle());
+		managed.add(particle());
+		particle().position(
+			new Vector2(
+				rng.nextFloat(spawn_zone.left, spawn_zone.right),
+				rng.nextFloat(spawn_zone.top, spawn_zone.bottom),
+			)
+		);
+	}
+
+	// Simulate the batch
+	const simulated = new DynCollection<Particle>();
+	simulated.inherit(additional_targets);
+	simulated.inherit(managed);
+
+	return any(
+		animateParticles(simulated, simulator, dist_per_sec * duration, duration, simulation_config),
+		run(function* () {
+			// Respawn invisible particles
+			while (true) {
+				// For every particle...
+				for (const particle of managed) {
+					// If it's still visible, ignore it.
+					if (visible_zone_rect.includes(particle.position())) {
+						continue;
+					}
+
+					// Otherwise, reset the trail.
+					particle.resetTrail();
+
+					// And move it to a random corner in the spawning zone.
+					// N.B. `nextInt`'s upper bound is exclusive.
+					const opposite_side = rng.nextInt(0, 2) === 0;
+
+					if (rng.nextInt(0, 2) === 0) {
+						// Spawn along the x axis
+						particle.position(spawn_zone.topLeft.add(new Vector2(
+							rng.nextFloat(0, spawn_zone.width),
+							opposite_side ? spawn_zone.height : 0,
+						)));
+					} else {
+						// Spawn on the y axis
+						particle.position(spawn_zone.topLeft.add(new Vector2(
+							opposite_side ? spawn_zone.width : 0,
+							rng.nextFloat(0, spawn_zone.height),
+						)));
+					}
+				}
+				yield;
+			}
+		}),
+	)
 }

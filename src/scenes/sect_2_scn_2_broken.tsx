@@ -2,11 +2,11 @@ import { makeScene2D } from "@motion-canvas/2d";
 import { Latex, Text } from "@motion-canvas/2d/lib/components";
 import { all, chain, every, waitFor, waitUntil } from "@motion-canvas/core/lib/flow";
 import { easeOutExpo } from "@motion-canvas/core/lib/tweening";
-import { Vector2 } from "@motion-canvas/core/lib/types";
+import { Rect, Vector2 } from "@motion-canvas/core/lib/types";
 import { createRef, useProject, useRandom } from "@motion-canvas/core/lib/utils";
 import { Graph } from "../components/graph";
 import { animateSpawn, dropOut, growIn, growOutTo as growOutTo, slag } from "../components/animations";
-import { animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, differentialSimulator, Particle } from "../components/flow";
+import { animateParticleField, animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, differentialSimulator, Particle } from "../components/flow";
 import { PlaybackState } from "@motion-canvas/core";
 
 export default makeScene2D(function* (view) {
@@ -78,39 +78,22 @@ export default makeScene2D(function* (view) {
 	);
 
 	// Animate those particles
-	// TODO: Extract into its own simulation file.
-	//  Give animation to a dedicated animation thread to avoid this hacky nonsense.
-	const rng = useRandom();
-	const is_seeking = useProject().playbackState() === PlaybackState.Seeking;
-
-	for (let i = 0; i < 10; i++) {
-		if (!is_seeking) {
-			for (let j = 0; j < 50; j++) {
-				const particle = <Particle x={rng.nextFloat(-15, 10)} y={rng.nextFloat(-10, 10)} max_trail_length={20} />;
-				graph().container().add(particle);
-				particle.moveToBottom();
-			}
+	yield* animateParticleField({
+		container: graph().container(),
+		simulator: differentialSimulator(({ x, y }) => {
+			const d = (x - y) / Math.pow(x - 2, 2);
+			return Math.max(Math.min(d, 10), -10);  // Clamp the derivative to tame the graph
+		}),
+		dist_per_sec: 5,
+		duration: 10,
+		spawn_zone: new Rect(-10, -10, 20, 20),
+		visible_zone: 5,
+		spawn_count: 50,
+		particle_factory(particle) {
+			<Particle
+				ref={particle}
+				max_trail_length={10}
+			/>;
 		}
-
-		yield* animateParticles(
-			graph(),
-			differentialSimulator(({ x, y }) => {
-				const d = (x - y) / Math.pow(x - 2, 2);
-				return Math.max(Math.min(d, 10), -10);
-			}),
-			5, 1,
-		);
-
-		if (!is_seeking) {
-			for (const child of graph().container().children()) {
-				if (child instanceof Particle && child.position().x > 10 + child.max_trail_length) {
-					child.remove();
-				}
-			}
-		}
-
-		if (i === 8) {
-			yield dropOut(1)(graph());
-		}
-	}
+	});
 });

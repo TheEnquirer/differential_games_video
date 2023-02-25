@@ -5,7 +5,7 @@ import { easeOutCubic, easeOutElastic, easeOutExpo } from "@motion-canvas/core/l
 import { createRef } from "@motion-canvas/core/lib/utils";
 import { Graph } from "../components/graph";
 import { animateSpawn, growIn } from "../components/animations";
-import { animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, differentialSimulator, invertSimulator, Particle, ParticleConfig } from "../components/flow";
+import { animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, differentialSimulator, invertSimulator, Particle, ParticleSimulatorConfig } from "../components/flow";
 import { Vector2 } from "@motion-canvas/core/lib/types";
 
 export default makeScene2D(function* (view) {
@@ -19,7 +19,7 @@ export default makeScene2D(function* (view) {
 	yield* waitUntil("neat theorem");
 
 	const graph = createRef<Graph>();
-	const config: ParticleConfig = { ...DEFAULT_PARTICLE_CONFIG, max_step_size: 0.005 };
+	const config: ParticleSimulatorConfig = { ...DEFAULT_PARTICLE_CONFIG, max_step_size: 0.005 };
 	const particle_1 = createRef<Particle>();
 	const particle_2 = createRef<Particle>();
 
