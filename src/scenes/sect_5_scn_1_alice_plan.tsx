@@ -2,7 +2,7 @@ import { makeScene2D } from "@motion-canvas/2d";
 import { Node, Latex, Circle, Rect, Text } from "@motion-canvas/2d/lib/components";
 import { waitUntil } from "@motion-canvas/core/lib/flow";
 import { createRef } from "@motion-canvas/core/lib/utils";
-import { Alice, Bob } from "../components/characters";
+import { Alice } from "../components/characters";
 import { Graph } from "../components/graph";
 import { animateSpawn, growIn, growOutTo } from "../components/animations";
 import { Vector2 } from "@motion-canvas/core/lib/types";

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "seed": 4003476336,
+  "timeEvents": [
+    {
+      "name": "shrink f(x)?",
+      "targetTime": 3.071545923708972
+    },
+    {
+      "name": "elaboration",
+      "targetTime": 5.779111771627571
+    },
+    {
+      "name": "elaboration 2",
+      "targetTime": 7.6913276718111
+    },
+    {
+      "name": "elaboration 3",
+      "targetTime": 9.881974366806368
+    },
+    {
+      "name": "elaboration 4",
+      "targetTime": 13.3051803975711
+    },
+    {
+      "name": "scene end",
+      "targetTime": 37.68286458333334
+    }
+  ]
+}
