@@ -1,8 +1,7 @@
 import { Node, NodeProps } from "@motion-canvas/2d/lib/components";
 import { colorSignal, initial, signal } from "@motion-canvas/2d/lib/decorators";
-import { all, any, every, run, waitFor } from "@motion-canvas/core/lib/flow";
+import { any, run } from "@motion-canvas/core/lib/flow";
 import { SimpleSignal } from "@motion-canvas/core/lib/signals";
-import { cancel, ThreadGenerator } from "@motion-canvas/core/lib/threading";
 import { linear, TimingFunction, tween } from "@motion-canvas/core/lib/tweening";
 import { Color, ColorSignal, PossibleColor, Rect, Vector2 } from "@motion-canvas/core/lib/types";
 import { createRef, Reference, useRandom } from "@motion-canvas/core/lib/utils";

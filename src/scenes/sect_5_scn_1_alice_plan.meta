@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "seed": 1188125917,
+  "timeEvents": [
+    {
+      "name": "scene start",
+      "targetTime": 0.19077134969282236
+    },
+    {
+      "name": "alice's plan",
+      "targetTime": 1.7877860126831648
+    },
+    {
+      "name": "show board",
+      "targetTime": 3.315517240631956
+    },
+    {
+      "name": "factorable quadratic",
+      "targetTime": 3.3444247494524397
+    },
+    {
+      "name": "scene end",
+      "targetTime": 6.229745405742241
+    }
+  ]
+}

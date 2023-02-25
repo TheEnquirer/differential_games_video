@@ -1,5 +1,4 @@
 import { Node } from "@motion-canvas/2d/lib/components";
-import { SimpleSignal } from "@motion-canvas/core/lib/signals";
 
 export type Class<T> = new (...args: any[]) => T;
 

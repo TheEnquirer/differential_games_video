@@ -4,9 +4,10 @@ import { chain, waitFor, waitUntil } from "@motion-canvas/core/lib/flow";
 import { createRef, useRandom } from "@motion-canvas/core/lib/utils";
 import { Graph } from "../components/graph";
 import { animateSpawn, dropIn, dropOut, growIn } from "../components/animations";
-import { easeInBounce, easeInExpo, easeInOutExpo, easeOutBounce, easeOutExpo } from "@motion-canvas/core/lib/tweening";
+import { easeInOutExpo, easeOutBounce, easeOutExpo } from "@motion-canvas/core/lib/tweening";
 import { Vector2 } from "@motion-canvas/core/lib/types";
-import { animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, DEFAULT_PARTICLE_CONFIG_NO_TRAIL, differentialSimulator, fieldSimulator, functionalSimulator, Particle } from "../components/flow";
+import { animateParticles, animateParticlesRange, DEFAULT_PARTICLE_CONFIG, differentialSimulator, fieldSimulator, functionalSimulator, Particle } from "../components/flow";
+import { Alice, Bob } from "../components/characters";
 
 export default makeScene2D(function* (view) {
 	// Rules text
@@ -21,21 +22,17 @@ export default makeScene2D(function* (view) {
 	// Characters
 	yield* waitUntil("the characters");
 
-	const alice = createRef<Shape>();
+	const alice = createRef<Alice>();
 	yield* animateSpawn(
 		view,
-		<Rect ref={alice} fill="red" x={-100} width={50} height={50}>
-			<Text x={-10} y={100} fontStyle="center"> Alice </Text>
-		</Rect>,
+		<Alice ref={alice} x={-100} />,
 		growIn(),
 	);
 
-	const bob = createRef<Shape>();
+	const bob = createRef<Bob>();
 	yield* animateSpawn(
 		view,
-		<Rect ref={bob} fill="blue" x={100} width={50} height={50}>
-			<Text x={-10} y={100} fontStyle="center"> Bob </Text>
-		</Rect>,
+		<Bob ref={bob} x={100} />,
 		growIn(),
 	);
 
@@ -213,3 +210,4 @@ export default makeScene2D(function* (view) {
 
 	yield* waitFor(1);
 });
+
