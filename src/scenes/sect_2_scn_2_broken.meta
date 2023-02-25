@@ -17,6 +17,10 @@
     {
       "name": "graph",
       "targetTime": 18.25771129732134
+    },
+    {
+      "name": "scene end",
+      "targetTime": 28.308883115734503
     }
   ]
 }

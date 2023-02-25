@@ -78,7 +78,7 @@ export default makeScene2D(function* (view) {
 	);
 
 	// Animate those particles
-	yield* animateParticleField({
+	yield animateParticleField({
 		container: graph().container(),
 		simulator: differentialSimulator(({ x, y }) => {
 			const d = (x - y) / Math.pow(x - 2, 2);
@@ -96,4 +96,7 @@ export default makeScene2D(function* (view) {
 			/>;
 		}
 	});
+
+	yield* waitUntil("scene end");
+	yield* dropOut(1)(graph());
 });

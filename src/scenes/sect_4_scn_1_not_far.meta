@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "seed": 2340889725,
+  "timeEvents": [
+    {
+      "name": "scene start",
+      "targetTime": 0.12863103786739769
+    },
+    {
+      "name": "not needed",
+      "targetTime": 1.5192264469355263
+    },
+    {
+      "name": "example eq",
+      "targetTime": 3.2965441580132264
+    },
+    {
+      "name": "show parameters",
+      "targetTime": 4.48865885553885
+    },
+    {
+      "name": "show graph",
+      "targetTime": 6.949243026639348
+    },
+    {
+      "name": "spawn points",
+      "targetTime": 10.535965328648919
+    },
+    {
+      "name": "animate points",
+      "targetTime": 12.787695920510401
+    },
+    {
+      "name": "zoom out",
+      "targetTime": 14.137762793820936
+    },
+    {
+      "name": "alice solutions",
+      "targetTime": 17.430730476191926
+    },
+    {
+      "name": "move alice around",
+      "targetTime": 19.16172012955147
+    },
+    {
+      "name": "alice tool two",
+      "targetTime": 23.57438003058751
+    },
+    {
+      "name": "scene end",
+      "targetTime": 29.12092316519489
+    }
+  ]
+}

@@ -326,10 +326,18 @@ export function animateParticleField(config: ParticleFlowConfig) {
 	const managed = new DynCollection<Particle>();
 
 	for (let i = 0; i < spawn_count; i++) {
+		// Spawn the particle
 		const particle = createRef<Particle>();
 		particle_factory(particle);
+
+		// Add it to the top of the container child list
 		container.add(particle());
+		particle().moveToBottom();
+
+		// Register it to the managed list
 		managed.add(particle());
+
+		// Give it a random initial position
 		particle().position(
 			new Vector2(
 				rng.nextFloat(spawn_zone.left, spawn_zone.right),
