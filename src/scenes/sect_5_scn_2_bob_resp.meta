@@ -23,8 +23,20 @@
       "targetTime": 13.3051803975711
     },
     {
+      "name": "bob's weapon",
+      "targetTime": 16.380944040081687
+    },
+    {
+      "name": "move around",
+      "targetTime": 19.879882131969843
+    },
+    {
+      "name": "is this enough",
+      "targetTime": 25.130602712474307
+    },
+    {
       "name": "scene end",
-      "targetTime": 37.68286458333334
+      "targetTime": 27.254712198579462
     }
   ]
 }
