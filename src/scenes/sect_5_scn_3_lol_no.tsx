@@ -110,6 +110,7 @@ export default makeScene2D(function* (view) {
 			DEFAULT_PARTICLE_CONFIG,
 			easeInOutExpo,
 		);
+		yield (particle.children()[0] as Circle).lineWidth(0, 1, easeInOutExpo);
 	}
 
 	yield* waitUntil("ruin bob's life");
@@ -123,7 +124,6 @@ export default makeScene2D(function* (view) {
 
 	yield* waitUntil("reject bad");
 	for (const particle of bad_particles) {
-		yield (particle.children()[0] as Circle).lineWidth(0, 1, easeInOutExpo);
 		yield particle.color(particle.color().alpha(0), 1, easeInOutExpo);
 	}
 
@@ -154,7 +154,7 @@ export default makeScene2D(function* (view) {
 		new_particles,
 		differentialSimulator(({ x: _, y }) => (y + 4) * (-0.3)),
 		10,
-		6,
+		10,
 		DEFAULT_PARTICLE_CONFIG,
 		easeOutExpo,
 	);
