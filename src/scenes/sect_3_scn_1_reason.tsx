@@ -9,6 +9,6 @@ export default makeScene2D(function* (view) {
 	// isn’t defined at x = 2. Second, this isn’t even {continuous deluxe edition}. The rate at which
 	// this curve yeets off into infinity just isn’t bounded, so the theorem can break down long
 	// before it reaches the asymptote.
-	view.add(<Text> TODO: Animate the asymptote stuff here. </Text>);
+	view.add(<Text> TODO: Animate the explanation for why the theorem doesn't apply. </Text>);
 	yield* waitFor(10);
 });

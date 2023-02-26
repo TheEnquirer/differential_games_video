@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "seed": 562428412,
+  "timeEvents": [
+    {
+      "name": "slag lol no",
+      "targetTime": 0.6278263281758415
+    },
+    {
+      "name": "consider this",
+      "targetTime": 2.096263639601979
+    },
+    {
+      "name": "eventually hit",
+      "targetTime": 3.1
+    },
+    {
+      "name": "if it hits the asymptote",
+      "targetTime": 7.1
+    },
+    {
+      "name": "combine them",
+      "targetTime": 9.767109832706858
+    },
+    {
+      "name": "ruin bob's life",
+      "targetTime": 11.851622948236043
+    },
+    {
+      "name": "reject bad",
+      "targetTime": 16.628466789292112
+    },
+    {
+      "name": "the 'solution'",
+      "targetTime": 19.956011290734846
+    },
+    {
+      "name": "hold up",
+      "targetTime": 24.5656050315469
+    },
+    {
+      "name": "scene end",
+      "targetTime": 29.11845773087382
+    }
+  ]
+}

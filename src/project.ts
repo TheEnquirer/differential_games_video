@@ -9,6 +9,7 @@ import sect_3_scn_2_disc from './scenes/sect_3_scn_2_disc?scene';
 import sect_4_scn_1_squish from './scenes/sect_4_scn_1_squish?scene';
 import sect_5_scn_1_alice_plan from './scenes/sect_5_scn_1_alice_plan?scene';
 import sect_5_scn_2_bob_resp from './scenes/sect_5_scn_2_bob_resp?scene';
+import sect_5_scn_3_lol_no from './scenes/sect_5_scn_3_lol_no?scene';
 
 export default makeProject({
 	name: "Differential Game",
@@ -22,6 +23,7 @@ export default makeProject({
 		sect_4_scn_1_squish,
 		sect_5_scn_1_alice_plan,
 		sect_5_scn_2_bob_resp,
+		sect_5_scn_3_lol_no,
 	],
 	background: '#ece6e2',
 });
